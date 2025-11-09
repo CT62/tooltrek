@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import Navbar from "../components/Navbar.tsx"
+import Navbar from "../components/Navbar"
 import { Hammer, Zap, Droplet, Home, HardHat, ArrowRight, Check, Package, Users, Mountain } from 'lucide-react';
 
 export default function ToolTrekLanding() {

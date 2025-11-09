@@ -19,11 +19,6 @@ export default function Navbar() {
             <a href="collections" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Collections</a>
             <a href="#" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Contact</a>
           </div>
-
-          {/* CTA */}
-          <button className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm">
-            Get Started
-          </button>
         </div>
       </div>
     </nav>

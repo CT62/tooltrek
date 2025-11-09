@@ -88,9 +88,6 @@ export default function ToolTrekLanding() {
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
 	    </a>
-            <button className="w-full sm:w-auto px-8 py-3.5 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-colors">
-              View Pricing
-            </button>
           </div>
         </div>
 

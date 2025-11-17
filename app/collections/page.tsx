@@ -1,92 +1,57 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Hammer, Zap, Droplet, Home, HardHat, Mountain, ArrowRight, Package, Star } from 'lucide-react';
 
+interface Tool {
+  id: number;
+  name: string;
+  brand: string;
+  price: number;
+  image?: string;
+  description: string;
+}
 
+interface Collection {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  items: number;
+  rating: number;
+  reviews: number;
+  description: string;
+  popular: boolean;
+  tools: Tool[];
+}
 
 export default function CollectionsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const collections = [
-    {
-      id: 1,
-      name: 'Bricklayer Starter Kit',
-      category: 'bricklaying',
-      icon: HardHat,
-      price: 899,
-      items: 28,
-      rating: 4.9,
-      reviews: 156,
-      description: 'Complete set for professional block laying with premium trowels, levels, and safety gear',
-      image: 'bg-blue-600',
-      popular: true
-    },
-    {
-      id: 2,
-      name: 'Electrician Pro Pack',
-      category: 'electrical',
-      icon: Zap,
-      price: 1299,
-      items: 42,
-      rating: 4.8,
-      reviews: 203,
-      description: 'Professional-grade electrical tools including multimeters, wire strippers, and safety equipment',
-      image: 'bg-blue-600',
-      popular: true
-    },
-    {
-      id: 3,
-      name: 'Plasterer Essential Set',
-      category: 'plastering',
-      icon: Home,
-      price: 749,
-      items: 24,
-      rating: 4.7,
-      reviews: 98,
-      description: 'Everything needed for smooth finishes including hawks, trowels, and mixing tools',
-      image: 'bg-blue-600',
-      popular: false
-    },
-    {
-      id: 4,
-      name: 'Plumber Complete Kit',
-      category: 'plumbing',
-      icon: Droplet,
-      price: 1099,
-      items: 35,
-      rating: 4.9,
-      reviews: 187,
-      description: 'Comprehensive plumbing toolkit with pipe wrenches, cutters, and specialized fittings',
-      image: 'bg-blue-600',
-      popular: true
-    },
-    {
-      id: 5,
-      name: 'Carpenter Master Set',
-      category: 'carpentry',
-      icon: Hammer,
-      price: 1499,
-      items: 52,
-      rating: 5.0,
-      reviews: 245,
-      description: 'Premium woodworking tools including saws, chisels, planes, and measuring equipment',
-      image: 'bg-blue-600',
-      popular: true
-    },
-    {
-      id: 6,
-      name: 'Bricklayer Advanced Kit',
-      category: 'bricklaying',
-      icon: HardHat,
-      price: 1399,
-      items: 38,
-      rating: 4.8,
-      reviews: 112,
-      description: 'Advanced toolkit with laser levels, professional mixers, and specialty cutting tools',
-      image: 'bg-blue-600',
-      popular: false
+  useEffect(() => {
+    fetchCollections();
+  }, []);
+
+  const fetchCollections = async () => {
+    try {
+      const response = await fetch('/api/collections');
+      const data = await response.json();
+      setCollections(data);
+    } catch (err) {
+      console.error('Failed to fetch collections:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const categoryIcons: Record<string, any> = {
+    bricklaying: HardHat,
+    electrical: Zap,
+    plastering: Home,
+    plumbing: Droplet,
+    carpentry: Hammer,
+  };
 
   const categories = [
     { id: 'all', name: 'All Collections', count: collections.length },
@@ -100,6 +65,17 @@ export default function CollectionsPage() {
   const filteredCollections = selectedCategory === 'all' 
     ? collections 
     : collections.filter(c => c.category === selectedCategory);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading collections...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-white">
@@ -134,11 +110,14 @@ export default function CollectionsPage() {
         {/* Collections Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCollections.map((collection) => {
-            const Icon = collection.icon;
+            const Icon = categoryIcons[collection.category] || Package;
+            const toolCount = collection.tools?.length || 0;
+            
             return (
-              <div
+              <a
                 key={collection.id}
-                className="group bg-white rounded-3xl overflow-hidden hover:shadow-2xl transition-all cursor-pointer border-2 border-slate-100 hover:border-blue-600"
+                href={`/collections/${collection.id}`}
+                className="group bg-white rounded-3xl overflow-hidden hover:shadow-2xl transition-all cursor-pointer border-2 border-slate-100 hover:border-blue-600 block"
               >
                 {/* Content */}
                 <div className="p-8">
@@ -169,7 +148,9 @@ export default function CollectionsPage() {
                   <div className="flex items-center gap-6 mb-6 pb-6 border-b border-slate-100">
                     <div className="flex items-center gap-2">
                       <Package className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-semibold text-slate-900">{collection.items} items</span>
+                      <span className="text-sm font-semibold text-slate-900">
+                        {toolCount} {toolCount === 1 ? 'item' : 'items'}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
@@ -186,13 +167,13 @@ export default function CollectionsPage() {
                         €{collection.price}
                       </div>
                     </div>
-                    <button className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all group-hover:scale-105 flex items-center gap-2">
+                    <div className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all group-hover:scale-105 flex items-center gap-2">
                       <span>View</span>
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </a>
             );
           })}
         </div>

@@ -54,7 +54,6 @@ export default function AdminDashboard() {
 
   const handleAddTool = async (tool: Tool) => {
     if (!selectedCollection) return;
-
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch(`/api/collections/${selectedCollection.id}/tools`, {
@@ -65,7 +64,6 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify(tool),
       });
-
       if (response.ok) {
         const newTool = await response.json();
         const updatedCollection = {
@@ -86,7 +84,6 @@ export default function AdminDashboard() {
 
   const handleUpdateTool = async (tool: Tool) => {
     if (!selectedCollection) return;
-
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch(`/api/collections/${selectedCollection.id}/tools/${tool.id}`, {
@@ -97,7 +94,6 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify(tool),
       });
-
       if (response.ok) {
         const updatedCollection = {
           ...selectedCollection,
@@ -116,7 +112,6 @@ export default function AdminDashboard() {
 
   const handleDeleteTool = async (toolId: number) => {
     if (!selectedCollection || !confirm('Are you sure you want to delete this tool?')) return;
-
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch(`/api/collections/${selectedCollection.id}/tools/${toolId}`, {
@@ -125,7 +120,6 @@ export default function AdminDashboard() {
           'Authorization': `Bearer ${token}`,
         },
       });
-
       if (response.ok) {
         const updatedCollection = {
           ...selectedCollection,
@@ -195,7 +189,6 @@ export default function AdminDashboard() {
               <h1 className="text-4xl font-black text-slate-900 mb-2">Select a Collection</h1>
               <p className="text-slate-600">Choose a collection to manage its tools</p>
             </div>
-
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {collections.map((collection) => (
                 <button
@@ -371,7 +364,7 @@ function ToolForm({
           type="text"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none"
+          className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
           placeholder="e.g., 16oz Claw Hammer"
         />
       </div>
@@ -382,7 +375,7 @@ function ToolForm({
           type="text"
           value={formData.brand}
           onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-          className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none"
+          className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
           placeholder="e.g., Stanley, DeWalt"
         />
       </div>
@@ -392,7 +385,7 @@ function ToolForm({
         <textarea
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none"
+          className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
           rows={3}
           placeholder="Describe the tool and its features..."
         />
@@ -406,18 +399,17 @@ function ToolForm({
             step="0.01"
             value={formData.price}
             onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-            className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none"
+            className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
             placeholder="29.99"
           />
         </div>
-
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">Image URL (optional)</label>
           <input
             type="text"
             value={formData.image || ''}
             onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-            className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none"
+            className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
             placeholder="https://..."
           />
         </div>

@@ -1,13 +1,13 @@
+// app/page.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
-import Navbar from "../components/Navbar"
 import { Hammer, Zap, Droplet, Home, HardHat, ArrowRight, Check, Package, Users, Mountain } from 'lucide-react';
 
 export default function ToolTrekLanding() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handleMouseMove = (e:MouseEvent) => {
+    const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
     
@@ -82,12 +82,12 @@ export default function ToolTrekLanding() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-	  <a href="/collections">
-            <button className="group w-full sm:w-auto px-8 py-3.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-              <span>Browse Collections</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-	    </a>
+            <a href="/collections">
+              <button className="group w-full sm:w-auto px-8 py-3.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                <span>Browse Collections</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </a>
           </div>
         </div>
 
@@ -177,10 +177,12 @@ export default function ToolTrekLanding() {
           <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
             Get your professional tool kit today and build the future you deserve.
           </p>
-          <button className="px-10 py-4 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-100 transition-colors inline-flex items-center gap-2">
-            <span>Shop Now</span>
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          <a href="/collections">
+            <button className="px-10 py-4 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-100 transition-colors inline-flex items-center gap-2">
+              <span>Shop Now</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </a>
         </div>
       </section>
     </div>

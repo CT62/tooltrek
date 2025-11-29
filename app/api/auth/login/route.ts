@@ -1,31 +1,39 @@
+// app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+import { validateCredentials, createToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
+    const body = await request.json();
+    const { username, password } = body;
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      const token = jwt.sign(
-        { username, role: 'admin' },
-        JWT_SECRET,
-        { expiresIn: '24h' }
+    if (!username || !password) {
+      return NextResponse.json(
+        { error: 'Username and password required', success: false },
+        { status: 400 }
       );
+    }
 
-      return NextResponse.json({ token, success: true });
+    if (validateCredentials(username, password)) {
+      try {
+        const token = createToken(username);
+        return NextResponse.json({ token, success: true });
+      } catch (error) {
+        return NextResponse.json(
+          { error: 'Server configuration error. Please contact administrator.', success: false },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json(
-      { error: 'Invalid credentials' },
+      { error: 'Invalid credentials', success: false },
       { status: 401 }
     );
   } catch (error) {
+    console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Server error' },
+      { error: 'Server error', success: false },
       { status: 500 }
     );
   }

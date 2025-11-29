@@ -1,48 +1,37 @@
+// app/api/collections/[id]/tools/[toolId]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { collections } from '@/lib/data';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
-
-function verifyToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) return false;
-
-  const token = authHeader.split(' ')[1];
-  try {
-    jwt.verify(token, JWT_SECRET);
-    return true;
-  } catch {
-    return false;
-  }
-}
+import { verifyRequestAuth } from '@/lib/auth';
+import { updateToolInCollection, deleteToolFromCollection, getCollectionById } from '@/lib/data';
 
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ id: string; toolId: string }> }
+  { params }: { params: { id: string; toolId: string } }
 ) {
-  if (!verifyToken(request)) {
+  if (!verifyRequestAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     const updatedTool = await request.json();
-    const params = await context.params; // AWAIT params here
     const collectionId = parseInt(params.id);
     const toolId = parseInt(params.toolId);
     
-    const collection = collections.find(c => c.id === collectionId);
+    if (isNaN(collectionId) || isNaN(toolId)) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
+
+    const collection = await getCollectionById(collectionId);
     if (!collection) {
       return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
     }
 
-    const toolIndex = collection.tools.findIndex(t => t.id === toolId);
-    if (toolIndex === -1) {
+    const result = await updateToolInCollection(collectionId, toolId, updatedTool);
+    
+    if (!result) {
       return NextResponse.json({ error: 'Tool not found' }, { status: 404 });
     }
 
-    collection.tools[toolIndex] = { ...collection.tools[toolIndex], ...updatedTool };
-    return NextResponse.json(collection.tools[toolIndex]);
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error updating tool:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
@@ -51,21 +40,36 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string; toolId: string }> }
+  { params }: { params: { id: string; toolId: string } }
 ) {
-  if (!verifyToken(request)) {
+  if (!verifyRequestAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const params = await context.params; // AWAIT params here
-  const collectionId = parseInt(params.id);
-  const toolId = parseInt(params.toolId);
-  
-  const collection = collections.find(c => c.id === collectionId);
-  if (!collection) {
-    return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
-  }
+  try {
+    const collectionId = parseInt(params.id);
+    const toolId = parseInt(params.toolId);
+    
+    if (isNaN(collectionId) || isNaN(toolId)) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
 
-  collection.tools = collection.tools.filter(t => t.id !== toolId);
-  return NextResponse.json({ success: true });
+    const collection = await getCollectionById(collectionId);
+    if (!collection) {
+      return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
+    }
+
+    const success = await deleteToolFromCollection(collectionId, toolId);
+    
+    if (!success) {
+      return NextResponse.json({ error: 'Tool not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting tool:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
 }
+
+export const dynamic = 'force-dynamic';

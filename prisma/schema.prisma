@@ -1,6 +1,6 @@
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
-  engineType = "binary"
 }
 
 datasource db {
@@ -9,23 +9,29 @@ datasource db {
 }
 
 model Collection {
-  id          Int     @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String
   category    String
-  price       Int
+  price       Float
   items       Int
   rating      Float
   reviews     Int
   description String
-  popular     Boolean
+  popular     Boolean  @default(false)
   tools       Tool[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Tool {
-  id            Int    @id @default(autoincrement())
-  name          String
-  description   String?
-  collectionId  Int
-  collection    Collection @relation(fields: [collectionId], references: [id])
+  id           Int        @id @default(autoincrement())
+  name         String
+  brand        String
+  price        Float
+  image        String?
+  description  String
+  collectionId Int
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
-

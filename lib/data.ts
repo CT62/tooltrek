@@ -23,7 +23,7 @@ export async function getCollectionById(id: number): Promise<Collection | null> 
 
 export async function updateCollection(
   id: number, 
-  updates: Partial<Collection>
+  updates: Partial<Omit<Collection, 'id' | 'tools'>>
 ): Promise<Collection | null> {
   try {
     const collection = await prisma.collection.update({
@@ -60,7 +60,7 @@ export async function addToolToCollection(
 export async function updateToolInCollection(
   collectionId: number, 
   toolId: number, 
-  updates: Partial<Tool>
+  updates: Partial<Omit<Tool, 'id' | 'collectionId'>>
 ): Promise<Tool | null> {
   try {
     // Verify tool belongs to collection

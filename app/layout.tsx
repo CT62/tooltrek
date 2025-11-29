@@ -1,21 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import "./globals.css";
-import Navbar from "../components/Navbar"
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
-  title: "ToolTrek",
-  description: "",
+  title: "ToolTrek - Professional Tool Starter Packs",
+  description: "Hand-curated tool kits designed by professionals for every trade.",
 };
 
 export default function RootLayout({
@@ -24,13 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-
-      <Navbar/>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className="antialiased font-sans">
         {children}
       </body>
     </html>

@@ -1,28 +1,8 @@
+// app/admin/dashboard/page.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Mountain, Plus, Edit, Trash2, LogOut, Save, X, ArrowLeft } from 'lucide-react';
-
-interface Tool {
-  id: number;
-  name: string;
-  brand: string;
-  price: number;
-  image?: string;
-  description: string;
-}
-
-interface Collection {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  items: number;
-  rating: number;
-  reviews: number;
-  description: string;
-  popular: boolean;
-  tools: Tool[];
-}
+import { Collection, Tool } from '@/types';
 
 export default function AdminDashboard() {
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -52,7 +32,7 @@ export default function AdminDashboard() {
     window.location.href = '/admin';
   };
 
-  const handleAddTool = async (tool: Tool) => {
+  const handleAddTool = async (tool: Omit<Tool, 'id' | 'collectionId'>) => {
     if (!selectedCollection) return;
     try {
       const token = localStorage.getItem('adminToken');
@@ -143,6 +123,7 @@ export default function AdminDashboard() {
       price: 0,
       description: '',
       image: '',
+      collectionId: selectedCollection?.id || 0,
     });
     setShowAddForm(true);
   };
@@ -237,7 +218,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Add/Edit Form Modal */}
-            {(showAddForm || editingTool) && (
+            {(showAddForm || editingTool) && editingTool && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
                 <div className="bg-white rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                   <div className="flex items-center justify-between mb-6">
@@ -255,7 +236,7 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                   <ToolForm
-                    tool={editingTool!}
+                    tool={editingTool}
                     onSave={showAddForm ? handleAddTool : handleUpdateTool}
                     onCancel={() => {
                       setShowAddForm(false);
@@ -347,7 +328,7 @@ function ToolForm({
   onCancel,
 }: {
   tool: Tool;
-  onSave: (tool: Tool) => void;
+  onSave: (tool: any) => void;
   onCancel: () => void;
 }) {
   const [formData, setFormData] = useState(tool);

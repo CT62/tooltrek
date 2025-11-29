@@ -1,3 +1,4 @@
+// app/admin/page.tsx
 'use client';
 import React, { useState } from 'react';
 import { Mountain, Lock, User, AlertCircle } from 'lucide-react';

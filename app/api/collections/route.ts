@@ -3,22 +3,30 @@ import { NextResponse } from 'next/server';
 import { getCollections } from '@/lib/data';
 
 export async function GET() {
+  console.log('=== API Route Called ===');
+  
   try {
+    console.log('Calling getCollections()...');
     const collections = await getCollections();
     
-    // Log what we're getting
-    console.log('Collections from DB:', collections);
+    console.log('Collections returned:', collections);
+    console.log('Is array?', Array.isArray(collections));
+    console.log('Length:', collections?.length);
     
-    // Ensure we always return an array
-    if (!collections || !Array.isArray(collections)) {
-      console.error('getCollections() did not return an array:', collections);
+    // Ensure we return an array
+    if (!Array.isArray(collections)) {
+      console.error('ERROR: Not an array!', typeof collections);
       return NextResponse.json([]);
     }
     
     return NextResponse.json(collections);
   } catch (error) {
-    console.error('Error fetching collections:', error);
-    // Return empty array instead of error object
+    console.error('=== API ERROR ===');
+    console.error('Error type:', error?.constructor?.name);
+    console.error('Error message:', error instanceof Error ? error.message : error);
+    console.error('Full error:', error);
+    
+    // Return empty array on error
     return NextResponse.json([]);
   }
 }

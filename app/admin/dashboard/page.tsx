@@ -254,15 +254,6 @@ export default function AdminDashboard() {
                   key={tool.id}
                   className="bg-white rounded-2xl border-2 border-slate-100 overflow-hidden hover:border-blue-600 transition-all"
                 >
-                  {tool.image && (
-                    <div className="h-48 bg-slate-100 flex items-center justify-center">
-                      <img
-                        src={tool.image}
-                        alt={tool.name}
-                        className="max-h-full max-w-full object-contain p-4"
-                      />
-                    </div>
-                  )}
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
@@ -272,27 +263,22 @@ export default function AdminDashboard() {
                         <p className="text-sm text-slate-500 mb-2">{tool.brand}</p>
                       </div>
                     </div>
-                    <p className="text-sm text-slate-600 mb-4 line-clamp-2">
+                    <p className="text-sm text-slate-600 mb-4">
                       {tool.description}
                     </p>
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                      <div className="text-2xl font-black text-slate-900">
-                        €{tool.price}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setEditingTool(tool)}
-                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                        >
-                          <Edit className="w-5 h-5 text-blue-600" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTool(tool.id)}
-                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-5 h-5 text-red-600" />
-                        </button>
-                      </div>
+                    <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                      <button
+                        onClick={() => setEditingTool(tool)}
+                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <Edit className="w-5 h-5 text-blue-600" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTool(tool.id)}
+                        className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-5 h-5 text-red-600" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -369,30 +355,6 @@ function ToolForm({
           className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
           rows={3}
           placeholder="Describe the tool and its features..."
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">Price (€)</label>
-        <input
-          type="number"
-          value={formData.price}
-          onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-          className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
-          placeholder="0.00"
-          step="0.01"
-          min="0"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">Image URL</label>
-        <input
-          type="text"
-          value={formData.image}
-          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-          className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
-          placeholder="https://example.com/image.jpg"
         />
       </div>
 

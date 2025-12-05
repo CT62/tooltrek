@@ -48,7 +48,7 @@ export default function AdminDashboard() {
         const newTool = await response.json();
         const updatedCollection = {
           ...selectedCollection,
-          tools: [...selectedCollection.tools, newTool],
+          tools: [...(selectedCollection.tools || []), newTool],
         };
         setSelectedCollection(updatedCollection);
         setCollections(collections.map(c => 
@@ -77,7 +77,7 @@ export default function AdminDashboard() {
       if (response.ok) {
         const updatedCollection = {
           ...selectedCollection,
-          tools: selectedCollection.tools.map(t => t.id === tool.id ? tool : t),
+          tools: (selectedCollection.tools || []).map(t => t.id === tool.id ? tool : t),
         };
         setSelectedCollection(updatedCollection);
         setCollections(collections.map(c => 
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
       if (response.ok) {
         const updatedCollection = {
           ...selectedCollection,
-          tools: selectedCollection.tools.filter(t => t.id !== toolId),
+          tools: (selectedCollection.tools || []).filter(t => t.id !== toolId),
         };
         setSelectedCollection(updatedCollection);
         setCollections(collections.map(c => 
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
                     {collection.category}
                   </p>
                   <div className="text-sm font-semibold text-blue-600">
-                    {collection.tools.length} tools
+                    {collection.tools?.length || 0} tools
                   </div>
                 </button>
               ))}
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
                   <h1 className="text-4xl font-black text-slate-900 mb-1">
                     {selectedCollection.name}
                   </h1>
-                  <p className="text-slate-600">{selectedCollection.tools.length} tools in this collection</p>
+                  <p className="text-slate-600">{selectedCollection.tools?.length || 0} tools in this collection</p>
                 </div>
               </div>
               <button
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
 
             {/* Tools Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {selectedCollection.tools.map((tool) => (
+              {(selectedCollection.tools || []).map((tool) => (
                 <div
                   key={tool.id}
                   className="bg-white rounded-2xl border-2 border-slate-100 overflow-hidden hover:border-blue-600 transition-all"
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {selectedCollection.tools.length === 0 && (
+            {(selectedCollection.tools?.length || 0) === 0 && (
               <div className="text-center py-20">
                 <div className="text-slate-300 mb-4">
                   <Plus className="w-16 h-16 mx-auto" />
@@ -371,6 +371,31 @@ function ToolForm({
           placeholder="Describe the tool and its features..."
         />
       </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-slate-700 mb-2">Price (€)</label>
+        <input
+          type="number"
+          value={formData.price}
+          onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+          className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
+          placeholder="0.00"
+          step="0.01"
+          min="0"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-slate-700 mb-2">Image URL</label>
+        <input
+          type="text"
+          value={formData.image}
+          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+          className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
+          placeholder="https://example.com/image.jpg"
+        />
+      </div>
+
       <div className="flex items-center gap-3 pt-4">
         <button
           onClick={handleSubmit}

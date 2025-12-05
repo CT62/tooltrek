@@ -122,6 +122,8 @@ export default function AdminDashboard() {
       brand: '',
       description: '',
       collectionId: selectedCollection?.id || 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
     setShowAddForm(true);
   };

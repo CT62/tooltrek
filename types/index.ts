@@ -3,10 +3,10 @@ export interface Tool {
   id: number;
   name: string;
   brand: string;
-  price: number;
-  image?: string | null;
   description: string;
   collectionId: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Collection {
@@ -19,7 +19,10 @@ export interface Collection {
   reviews: number;
   description: string;
   popular: boolean;
-  tools: Tool[];
+  imageUrl?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  tools?: Tool[];
 }
 
 export interface ApiError {

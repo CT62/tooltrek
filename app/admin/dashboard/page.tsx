@@ -371,31 +371,6 @@ function ToolForm({
           placeholder="Describe the tool and its features..."
         />
       </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Price (€)</label>
-          <input
-            type="number"
-            step="0.01"
-            value={formData.price}
-            onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-            className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
-            placeholder="29.99"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Image URL (optional)</label>
-          <input
-            type="text"
-            value={formData.image || ''}
-            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-            className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:outline-none text-slate-900"
-            placeholder="https://..."
-          />
-        </div>
-      </div>
-
       <div className="flex items-center gap-3 pt-4">
         <button
           onClick={handleSubmit}

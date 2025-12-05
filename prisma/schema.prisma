@@ -27,8 +27,6 @@ model Tool {
   id           Int        @id @default(autoincrement())
   name         String
   brand        String
-  price        Float
-  image        String?
   description  String
   collectionId Int
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)

@@ -106,7 +106,7 @@ export default function CollectionsPage() {
                   <div className="flex items-center gap-1 text-slate-600">
                     <Package className="w-4 h-4" />
                     <span className="text-sm font-medium">
-                      {collection.tools.length?} tools
+                        {collection.tools?.length || 0} tools
                     </span>
                   </div>
                 </div>

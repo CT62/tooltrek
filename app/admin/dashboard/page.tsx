@@ -120,9 +120,7 @@ export default function AdminDashboard() {
       id: 0,
       name: '',
       brand: '',
-      price: 0,
       description: '',
-      image: '',
       collectionId: selectedCollection?.id || 0,
     });
     setShowAddForm(true);

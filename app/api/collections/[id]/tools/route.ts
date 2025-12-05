@@ -24,7 +24,7 @@ export async function POST(
       return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
     }
 
-    if (!tool.name || !tool.brand || typeof tool.price !== 'number') {
+    if (!tool.name || !tool.brand) {
       return NextResponse.json({ error: 'Invalid tool data' }, { status: 400 });
     }
 

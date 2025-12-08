@@ -10,12 +10,14 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@stripe/stripe-js": "^8.5.3",
     "geist": "^1.5.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "latest",
     "next": "14.2.0 or later",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "stripe": "^20.0.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.7",

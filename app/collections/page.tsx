@@ -118,9 +118,9 @@ export default function CollectionsPage() {
                     </div>
                     <div className="text-xs text-slate-500">Complete kit</div>
                   </div>
-                  <button className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
+                  <a href={`collections/${collection.id}`} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
                     View Details
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>

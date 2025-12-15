@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { headers } from 'next/headers';
-import { prisma } from '@/lib/prisma'; // Make sure you have Prisma client set up
+import { prisma } from '@/lib/prisma';
+import Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -33,47 +34,52 @@ export async function POST(req: NextRequest) {
   // Handle the event
   switch (event.type) {
     case 'checkout.session.completed':
-      const session = event.data.object;
+      const session = event.data.object as Stripe.Checkout.Session;
+      
+      // Retrieve the full session with shipping details
+      const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+        expand: ['shipping_details'],
+      });
       
       console.log('Payment successful!', {
-        sessionId: session.id,
-        collectionId: session.metadata?.collectionId,
-        collectionName: session.metadata?.collectionName,
-        amountTotal: session.amount_total,
-        customerEmail: session.customer_details?.email,
-        shippingAddress: session.shipping_details?.address,
+        sessionId: fullSession.id,
+        collectionId: fullSession.metadata?.collectionId,
+        collectionName: fullSession.metadata?.collectionName,
+        amountTotal: fullSession.amount_total,
+        customerEmail: fullSession.customer_details?.email,
+        shippingAddress: fullSession.shipping_details?.address,
       });
 
       // Save order to database
       try {
         const order = await prisma.order.create({
           data: {
-            stripeSessionId: session.id,
-            stripePaymentId: session.payment_intent as string,
+            stripeSessionId: fullSession.id,
+            stripePaymentId: fullSession.payment_intent as string,
             
             // Customer info
-            email: session.customer_details?.email || '',
-            customerName: session.customer_details?.name || null,
-            phone: session.customer_details?.phone || null,
+            email: fullSession.customer_details?.email || '',
+            customerName: fullSession.customer_details?.name || null,
+            phone: fullSession.customer_details?.phone || null,
             
             // Order details
-            collectionId: parseInt(session.metadata?.collectionId || '0'),
-            collectionName: session.metadata?.collectionName || '',
-            amount: session.amount_total || 0,
-            currency: session.currency || 'eur',
+            collectionId: parseInt(fullSession.metadata?.collectionId || '0'),
+            collectionName: fullSession.metadata?.collectionName || '',
+            amount: fullSession.amount_total || 0,
+            currency: fullSession.currency || 'eur',
             status: 'paid',
             
             // Shipping address
-            shippingName: session.shipping_details?.name || null,
-            shippingLine1: session.shipping_details?.address?.line1 || null,
-            shippingLine2: session.shipping_details?.address?.line2 || null,
-            shippingCity: session.shipping_details?.address?.city || null,
-            shippingState: session.shipping_details?.address?.state || null,
-            shippingPostal: session.shipping_details?.address?.postal_code || null,
-            shippingCountry: session.shipping_details?.address?.country || null,
+            shippingName: fullSession.shipping_details?.name || null,
+            shippingLine1: fullSession.shipping_details?.address?.line1 || null,
+            shippingLine2: fullSession.shipping_details?.address?.line2 || null,
+            shippingCity: fullSession.shipping_details?.address?.city || null,
+            shippingState: fullSession.shipping_details?.address?.state || null,
+            shippingPostal: fullSession.shipping_details?.address?.postal_code || null,
+            shippingCountry: fullSession.shipping_details?.address?.country || null,
             
             // Items (you can fetch from collection or pass via metadata)
-            items: {}, // You might want to pass tools data in metadata
+            items: {},
             
             paidAt: new Date(),
           },

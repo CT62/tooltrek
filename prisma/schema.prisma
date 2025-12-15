@@ -59,6 +59,8 @@ model Order {
   shippingState     String?
   shippingPostal    String?
   shippingCountry   String?
+  shippingCost      Int?
+  shippingRate      String?
   
   // Items
   items             Json     // Store the tools array as JSON

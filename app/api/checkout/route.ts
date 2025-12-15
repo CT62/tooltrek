@@ -1,111 +1,135 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { headers } from 'next/headers';
-import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
-  const body = await req.text();
-  const signature = headers().get('stripe-signature');
-
-  if (!signature) {
-    return NextResponse.json(
-      { error: 'No signature' },
-      { status: 400 }
-    );
-  }
-
-  let event;
-
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err);
-    return NextResponse.json(
-      { error: 'Webhook signature verification failed' },
-      { status: 400 }
-    );
-  }
+    const body = await req.json();
+    const { collectionId, collectionName, price, tools } = body;
 
-  // Handle the event
-  switch (event.type) {
-    case 'checkout.session.completed':
-      const session = event.data.object;
-      
-      console.log('Payment successful!', {
-        sessionId: session.id,
-        collectionId: session.metadata?.collectionId,
-        collectionName: session.metadata?.collectionName,
-        amountTotal: session.amount_total,
-        customerEmail: session.customer_details?.email,
-      });
+    // Validate the data
+    if (!collectionId || !collectionName || !price) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
 
-      // Save order to database
-      try {
-        // Access shipping_details safely - it exists but TypeScript doesn't know about it
-        const shippingDetails = (session as any).shipping_details;
-        
-        const order = await prisma.order.create({
-          data: {
-            stripeSessionId: session.id,
-            stripePaymentId: session.payment_intent as string,
-            
-            // Customer info
-            email: session.customer_details?.email || '',
-            customerName: session.customer_details?.name || null,
-            phone: session.customer_details?.phone || null,
-            
-            // Order details
-            collectionId: parseInt(session.metadata?.collectionId || '0'),
-            collectionName: session.metadata?.collectionName || '',
-            amount: session.amount_total || 0,
-            currency: session.currency || 'eur',
-            status: 'paid',
-            
-            // Shipping address
-            shippingName: shippingDetails?.name || null,
-            shippingLine1: shippingDetails?.address?.line1 || null,
-            shippingLine2: shippingDetails?.address?.line2 || null,
-            shippingCity: shippingDetails?.address?.city || null,
-            shippingState: shippingDetails?.address?.state || null,
-            shippingPostal: shippingDetails?.address?.postal_code || null,
-            shippingCountry: shippingDetails?.address?.country || null,
-            
-            // Items (you can fetch from collection or pass via metadata)
-            items: {},
-            
-            paidAt: new Date(),
+    // Ensure tools is an array
+    const toolsList = Array.isArray(tools) ? tools : [];
+
+    // Get the origin from headers
+    const origin = req.headers.get('origin') || 'http://localhost:3000';
+
+    // Create a checkout session with shipping options
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: collectionName,
+              description: `Complete tool kit with ${toolsList.length} items`,
+            },
+            unit_amount: Math.round(price * 100), // Convert to cents
           },
-        });
-
-        console.log('Order saved to database:', order.id);
-        console.log('Shipping address:', {
-          name: shippingDetails?.name,
-          address: shippingDetails?.address,
-        });
-
-        // TODO: Send confirmation email with order details and shipping address
-        
-      } catch (dbError) {
-        console.error('Failed to save order to database:', dbError);
-      }
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
       
-      break;
+      // Collect shipping address
+      shipping_address_collection: {
+        allowed_countries: ['IE'],
+      },
+      
+      // Shipping options
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: {
+              amount: 0, // Free shipping
+              currency: 'eur',
+            },
+            display_name: 'Standard Shipping',
+            delivery_estimate: {
+              minimum: {
+                unit: 'business_day',
+                value: 5,
+              },
+              maximum: {
+                unit: 'business_day',
+                value: 10,
+              },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: {
+              amount: 1500, // €15.00
+              currency: 'eur',
+            },
+            display_name: 'Express Shipping',
+            delivery_estimate: {
+              minimum: {
+                unit: 'business_day',
+                value: 2,
+              },
+              maximum: {
+                unit: 'business_day',
+                value: 3,
+              },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: {
+              amount: 500, // €5.00
+              currency: 'eur',
+            },
+            display_name: 'Next Day Delivery',
+            delivery_estimate: {
+              minimum: {
+                unit: 'business_day',
+                value: 3,
+              },
+              maximum: {
+                unit: 'business_day',
+                value: 5,
+              },
+            },
+          },
+        },
+      ],
+      
+      // Optionally collect phone number
+      phone_number_collection: {
+        enabled: true,
+      },
+      
+      success_url: `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/collections/${collectionId}`,
+      metadata: {
+        collectionId: collectionId.toString(),
+        collectionName,
+        toolsCount: toolsList.length.toString(),
+      },
+    });
 
-    case 'checkout.session.async_payment_succeeded':
-      console.log('Async payment succeeded');
-      break;
+    console.log('Created session:', session.id, 'URL:', session.url);
 
-    case 'checkout.session.async_payment_failed':
-      console.log('Async payment failed');
-      break;
-
-    default:
-      console.log(`Unhandled event type: ${event.type}`);
+    // Return the checkout URL
+    return NextResponse.json({ url: session.url });
+  } catch (error) {
+    console.error('Stripe checkout error:', error);
+    return NextResponse.json(
+      { error: 'Failed to create checkout session' },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ received: true });
 }

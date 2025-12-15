@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -34,49 +33,49 @@ export async function POST(req: NextRequest) {
   // Handle the event
   switch (event.type) {
     case 'checkout.session.completed':
-      const session = event.data.object as Stripe.Checkout.Session;
+      const session = event.data.object;
       
-      // Retrieve the full session with shipping details
-      const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-        expand: ['shipping_details'],
-      });
+      // Access shipping_details and shipping_cost safely
+      const shippingDetails = (session as any).shipping_details;
+      const shippingCost = (session as any).shipping_cost;
       
       console.log('Payment successful!', {
-        sessionId: fullSession.id,
-        collectionId: fullSession.metadata?.collectionId,
-        collectionName: fullSession.metadata?.collectionName,
-        amountTotal: fullSession.amount_total,
-        customerEmail: fullSession.customer_details?.email,
-        shippingAddress: fullSession.shipping_details?.address,
+        sessionId: session.id,
+        collectionId: session.metadata?.collectionId,
+        collectionName: session.metadata?.collectionName,
+        amountTotal: session.amount_total,
+        customerEmail: session.customer_details?.email,
+        shippingCost: shippingCost?.amount_total,
+        shippingRate: shippingCost?.shipping_rate,
       });
 
       // Save order to database
       try {
         const order = await prisma.order.create({
           data: {
-            stripeSessionId: fullSession.id,
-            stripePaymentId: fullSession.payment_intent as string,
+            stripeSessionId: session.id,
+            stripePaymentId: session.payment_intent as string,
             
             // Customer info
-            email: fullSession.customer_details?.email || '',
-            customerName: fullSession.customer_details?.name || null,
-            phone: fullSession.customer_details?.phone || null,
+            email: session.customer_details?.email || '',
+            customerName: session.customer_details?.name || null,
+            phone: session.customer_details?.phone || null,
             
             // Order details
-            collectionId: parseInt(fullSession.metadata?.collectionId || '0'),
-            collectionName: fullSession.metadata?.collectionName || '',
-            amount: fullSession.amount_total || 0,
-            currency: fullSession.currency || 'eur',
+            collectionId: parseInt(session.metadata?.collectionId || '0'),
+            collectionName: session.metadata?.collectionName || '',
+            amount: session.amount_total || 0,
+            currency: session.currency || 'eur',
             status: 'paid',
             
             // Shipping address
-            shippingName: fullSession.shipping_details?.name || null,
-            shippingLine1: fullSession.shipping_details?.address?.line1 || null,
-            shippingLine2: fullSession.shipping_details?.address?.line2 || null,
-            shippingCity: fullSession.shipping_details?.address?.city || null,
-            shippingState: fullSession.shipping_details?.address?.state || null,
-            shippingPostal: fullSession.shipping_details?.address?.postal_code || null,
-            shippingCountry: fullSession.shipping_details?.address?.country || null,
+            shippingName: shippingDetails?.name || null,
+            shippingLine1: shippingDetails?.address?.line1 || null,
+            shippingLine2: shippingDetails?.address?.line2 || null,
+            shippingCity: shippingDetails?.address?.city || null,
+            shippingState: shippingDetails?.address?.state || null,
+            shippingPostal: shippingDetails?.address?.postal_code || null,
+            shippingCountry: shippingDetails?.address?.country || null,
             
             // Items (you can fetch from collection or pass via metadata)
             items: {},
@@ -86,6 +85,10 @@ export async function POST(req: NextRequest) {
         });
 
         console.log('Order saved to database:', order.id);
+        console.log('Shipping address:', {
+          name: shippingDetails?.name,
+          address: shippingDetails?.address,
+        });
 
         // TODO: Send confirmation email with order details and shipping address
         

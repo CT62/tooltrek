@@ -33,3 +33,51 @@ model Tool {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }
+model Order {
+  id                String   @id @default(cuid())
+  userId            String?
+  email             String
+  stripePaymentId   String   @unique
+  amount            Int
+  status            String   // 'pending', 'paid', 'failed'
+  items             Json     // Store cart items
+  shippingAddress   Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Order {
+  id                String   @id @default(cuid())
+  stripeSessionId   String   @unique
+  stripePaymentId   String?  @unique
+  
+  // Customer info
+  email             String
+  customerName      String?
+  phone             String?
+  
+  // Order details
+  collectionId      Int
+  collectionName    String
+  amount            Int      // Amount in cents
+  currency          String   @default("eur")
+  status            String   // 'pending', 'paid', 'shipped', 'delivered', 'cancelled'
+  
+  // Shipping address
+  shippingName      String?
+  shippingLine1     String?
+  shippingLine2     String?
+  shippingCity      String?
+  shippingState     String?
+  shippingPostal    String?
+  shippingCountry   String?
+  
+  // Items
+  items             Json     // Store the tools array as JSON
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  paidAt            DateTime?
+  shippedAt         DateTime?
+}

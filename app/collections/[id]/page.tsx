@@ -30,6 +30,7 @@ export default function CollectionDetailPage() {
   const params = useParams();
   const [collection, setCollection] = useState<Collection | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   useEffect(() => {
     fetchCollection();
@@ -45,6 +46,52 @@ export default function CollectionDetailPage() {
       console.error('Failed to fetch collection:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!collection) return;
+
+    setCheckoutLoading(true);
+    console.log('Starting checkout...', collection);
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          collectionId: collection.id,
+          collectionName: collection.name,
+          price: collection.price,
+          tools: collection.tools,
+        }),
+      });
+
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (data.error) {
+        console.error('Checkout error:', data.error);
+        alert('Failed to start checkout. Please try again.');
+        setCheckoutLoading(false);
+        return;
+      }
+
+      if (data.url) {
+        console.log('Redirecting to:', data.url);
+        window.location.href = data.url;
+      } else {
+        console.error('No URL in response');
+        alert('Failed to start checkout. Please try again.');
+        setCheckoutLoading(false);
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      alert('Failed to start checkout. Please try again.');
+      setCheckoutLoading(false);
     }
   };
 
@@ -119,9 +166,13 @@ export default function CollectionDetailPage() {
                 Individual items: €{totalPrice.toFixed(2)}
               </div>
             </div>
-            <button className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center gap-3">
+            <button 
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
+              className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <ShoppingCart className="w-5 h-5" />
-              <span>Buy Complete Kit</span>
+              <span>{checkoutLoading ? 'Processing...' : 'Buy Complete Kit'}</span>
             </button>
           </div>
         </div>
